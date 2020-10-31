@@ -1,12 +1,13 @@
 import json
 import os
+from pathlib import Path
 
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Column, Integer, String
 
+project_dir = Path(__name__).parent / "database"
 database_filename = "database.db"
-project_dir = os.path.dirname(os.path.abspath(__file__))
-database_path = "sqlite:///{}".format(os.path.join(project_dir, database_filename))
+database_path = "sqlite:///{}".format(project_dir / database_filename)
 
 db = SQLAlchemy()
 
@@ -48,28 +49,6 @@ class Drink(db.Model):
     # the required datatype is [{'color': string, 'name':string, 'parts':number}]
     recipe = Column(String(180), nullable=False)
 
-    def short(self):
-        """
-        short()
-            short form representation of the Drink model
-        """
-        return {
-            'id': self.id,
-            'title': self.title,
-            'recipe': [{'color': r['color'], 'parts': r['parts']} for r in json.loads(self.recipe)]
-        }
-
-    def long(self):
-        """
-        long()
-            long form representation of the Drink model
-        """
-        return {
-            'id': self.id,
-            'title': self.title,
-            'recipe': json.loads(self.recipe)
-        }
-
     def insert(self):
         """
         insert()
@@ -95,17 +74,17 @@ class Drink(db.Model):
         db.session.delete(self)
         db.session.commit()
 
-    def update(self):
+    def update(self, data):
         """
         update()
             updates a new model into a database
             the model must exist in the database
         EXAMPLE
             drink = Drink.query.filter(Drink.id == id).one_or_none()
-            drink.title = 'Black Coffee'
-            drink.update()
+            drink.update({title='Black Coffee'})
         """
+        db.session.query(Drink).filter(Drink.id == self.id).update(data)
         db.session.commit()
 
     def __repr__(self):
-        return json.dumps(self.short())
+        return f"<Drink {self.title}>"

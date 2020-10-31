@@ -17,9 +17,9 @@ class DrinkFactory(factory.alchemy.SQLAlchemyModelFactory):
         gen = faker.Faker()
 
         recipe_dict = dict(
-            title = gen.lexify(),
-            color = gen.color(),
-            parts = gen.random_digit(),
+            name=gen.lexify(),
+            color=gen.color(),
+            parts=gen.random_digit(),
         )
 
         return json.dumps(recipe_dict)
