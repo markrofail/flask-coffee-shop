@@ -1,86 +1,160 @@
+import base64
 import json
-from flask import request, _request_ctx_stack
 from functools import wraps
-from jose import jwt
+from os import getenv
 from urllib.request import urlopen
 
+import requests
+from dotenv import load_dotenv
+from flask import _request_ctx_stack, abort, request
+from jose import jwt
 
-AUTH0_DOMAIN = 'udacity-fsnd.auth0.com'
-ALGORITHMS = ['RS256']
-API_AUDIENCE = 'dev'
+load_dotenv()
 
-## AuthError Exception
-'''
-AuthError Exception
-A standardized way to communicate auth failure modes
-'''
+# AuthError Exception
 class AuthError(Exception):
+    """
+    AuthError Exception
+    A standardized way to communicate auth failure modes
+    """
+
     def __init__(self, error, status_code):
         self.error = error
         self.status_code = status_code
 
 
-## Auth Header
-
-'''
-@TODO implement get_token_auth_header() method
-    it should attempt to get the header from the request
-        it should raise an AuthError if no header is present
-    it should attempt to split bearer and the token
-        it should raise an AuthError if the header is malformed
-    return the token part of the header
-'''
+# Auth Header
 def get_token_auth_header():
-   raise Exception('Not Implemented')
+    """
+    get_token_auth_header()
+        it should attempt to get the header from the request
+            it should raise an AuthError if no header is present
+        it should attempt to split bearer and the token
+            it should raise an AuthError if the header is malformed
+        return the token part of the header
+    """
 
-'''
-@TODO implement check_permissions(permission, payload) method
-    @INPUTS
-        permission: string permission (i.e. 'post:drink')
-        payload: decoded jwt payload
+    if "Authentication" not in request.headers:
+        raise AuthError("header not found", 401)
+    token = request.headers.get("Authentication")
 
-    it should raise an AuthError if permissions are not included in the payload
-        !!NOTE check your RBAC settings in Auth0
-    it should raise an AuthError if the requested permission string is not in the payload permissions array
-    return true otherwise
-'''
+    prefix = "Bearer "
+    if not token.startswith(prefix):
+        raise AuthError("header malformed", 401)
+
+    token = token[len(prefix) :]
+    return token
+
+
 def check_permissions(permission, payload):
-    raise Exception('Not Implemented')
+    """
+    check_permissions(permission, payload)
+        @INPUTS
+            permission: string permission (i.e. 'post:drink')
+            payload: decoded jwt payload
 
-'''
-@TODO implement verify_decode_jwt(token) method
-    @INPUTS
-        token: a json web token (string)
+        it should raise an AuthError if permissions are not included in the payload
+        it should raise an AuthError if the requested permission string is not in the payload permissions array
+        return true otherwise
+    """
 
-    it should be an Auth0 token with key id (kid)
-    it should verify the token using Auth0 /.well-known/jwks.json
-    it should decode the payload from the token
-    it should validate the claims
-    return the decoded payload
+    if "permissions" not in payload:
+        raise AuthError("header malformed", 401)
 
-    !!NOTE urlopen has a common certificate error described here: https://stackoverflow.com/questions/50236117/scraping-ssl-certificate-verify-failed-error-for-http-en-wikipedia-org
-'''
+    if permission not in payload["permissions"]:
+        raise AuthError("insufficient permissions", 403)
+
+    return True
+
+
 def verify_decode_jwt(token):
-    raise Exception('Not Implemented')
+    """
+    verify_decode_jwt(token)
+        @INPUTS
+            token: a json web token (string)
 
-'''
-@TODO implement @requires_auth(permission) decorator method
-    @INPUTS
-        permission: string permission (i.e. 'post:drink')
+        it should be an Auth0 token with key id (kid)
+        it should verify the token using Auth0 /.well-known/jwks.json
+        it should decode the payload from the token
+        it should validate the claims
+        return the decoded payload
+    """
+    auth_domain = getenv("AUTH0_DOMAIN")
+    auth_alg = getenv("AUTH0_JWT_ALGORITHM")
+    auth_audience = getenv("AUTH0_API_AUDIENCE")
 
-    it should use the get_token_auth_header method to get the token
-    it should use the verify_decode_jwt method to decode the jwt
-    it should use the check_permissions method validate claims and check the requested permission
-    return the decorator which passes the decoded payload to the decorated method
-'''
-def requires_auth(permission=''):
+    # ensure token matches pattern header.payload.signatured
+    jwt_parts = token.split(".")
+    if len(jwt_parts) != 3:
+        raise AuthError("header malformed", 401)
+
+    header, payload, signature = jwt_parts
+    header = base64.b64decode(header)
+    header = json.loads(header)
+
+    # ensure kid is in the header
+    if "kid" not in header:
+        raise AuthError("Auth token not authentic", 401)
+    kid = header["kid"]
+
+    # get jwt key store
+    try:
+        jwks = requests.get(f"{auth_domain}/.well-known/jwks.json")
+        jwks = jwks.json().get("keys", None)
+        assert jwks
+    except Exception:
+        raise AuthError("could not connect to the sever", 500)
+
+    # match rsa public key to kid
+    matching_rsa = None
+    for key in jwks:
+        if key.get("kid", "") == kid:
+            matching_rsa = key
+    if not matching_rsa:
+        raise AuthError("token not authentic", 401)
+
+    # decode jwt
+    try:
+        payload = jwt.decode(
+            token,
+            matching_rsa,
+            algorithms=[auth_alg],
+            audience=auth_audience,
+            issuer=f"{auth_domain}/",
+        )
+    except jwt.ExpiredSignatureError:
+        raise AuthError("expired token", 401)
+    except jwt.JWTClaimsError:
+        raise AuthError("invalid claims", 401)
+    except Exception:
+        raise AuthError("header malformed", 401)
+
+    return payload
+
+
+def requires_auth(permission=""):
+    """
+    @requires_auth(permission) decorator
+        @INPUTS
+            permission: string permission (i.e. 'post:drink')
+
+        it should use the get_token_auth_header method to get the token
+        it should use the verify_decode_jwt method to decode the jwt
+        it should use the check_permissions method validate claims and check the requested permission
+        return the decorator which passes the decoded payload to the decorated method
+    """
+
     def requires_auth_decorator(f):
         @wraps(f)
         def wrapper(*args, **kwargs):
-            token = get_token_auth_header()
-            payload = verify_decode_jwt(token)
-            check_permissions(permission, payload)
+            try:
+                token = get_token_auth_header()
+                payload = verify_decode_jwt(token)
+                check_permissions(permission, payload)
+            except AuthError as exec:
+                abort(exec.status_code)
             return f(payload, *args, **kwargs)
 
         return wrapper
+
     return requires_auth_decorator
