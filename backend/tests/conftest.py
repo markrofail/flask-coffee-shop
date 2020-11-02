@@ -42,9 +42,40 @@ def jwt_token():
 
 @pytest.fixture
 def disable_auth(monkeypatch):
-    def empty_func(_1=None, _2=None):
-        pass
+    auth_methods = [
+        "get_token_auth_header",
+        "verify_decode_jwt",
+        "check_permissions",
+    ]
+    for method in auth_methods:
+        monkeypatch.setattr(f"src.auth.auth.{method}", lambda *args: None)
 
-    monkeypatch.setattr("src.auth.auth.get_token_auth_header", empty_func)
-    monkeypatch.setattr("src.auth.auth.verify_decode_jwt", empty_func)
-    monkeypatch.setattr("src.auth.auth.check_permissions", empty_func)
+# mocking role in connection
+def _make_request_as(monkeypatch, permissions):
+    mock = dict(permissions=permissions)
+
+    monkeypatch.setattr("src.auth.auth.get_token_auth_header", lambda *args: None)
+    monkeypatch.setattr("src.auth.auth.verify_decode_jwt", lambda *args: mock)
+
+
+@pytest.fixture
+def make_request_as_customer(monkeypatch):
+    _make_request_as(monkeypatch, [])
+
+
+@pytest.fixture
+def make_request_as_barista(monkeypatch):
+    _make_request_as(monkeypatch, ["get:drinks-detail"])
+
+
+@pytest.fixture
+def make_request_as_manager(monkeypatch):
+    _make_request_as(
+        monkeypatch,
+        [
+            "post:drinks",
+            "patch:drinks",
+            "delete:drinks",
+            "get:drinks-detail",
+        ],
+    )
