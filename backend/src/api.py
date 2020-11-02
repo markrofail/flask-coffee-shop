@@ -5,6 +5,7 @@ from functools import partial
 from flask import Blueprint, Flask, abort, jsonify, request
 from flask_cors import CORS
 from sqlalchemy import exc
+
 from src.auth.auth import AuthError, requires_auth
 from src.models import db_drop_and_create_all, setup_db
 from src.serializers import (drink_schema, drinks_brief_schema, drinks_schema,
@@ -47,6 +48,7 @@ def drinks_list():
 
 
 @drink_api.route("/drinks-detail")
+@requires_auth("get:drinks-detail")
 def drinks_list_detail():
     """
     GET /drinks-detail
@@ -60,6 +62,7 @@ def drinks_list_detail():
 
 
 @drink_api.route("/drinks/<int:drink_id>", methods=["GET"])
+@requires_auth("get:drinks-detail")
 def drinks_detail(drink_id):
     """
     GET /drinks/<id>
@@ -75,6 +78,7 @@ def drinks_detail(drink_id):
 
 
 @drink_api.route("/drinks", methods=["POST"])
+@requires_auth("post:drinks")
 def drinks_create():
     """
     POST /drinks
@@ -97,6 +101,7 @@ def drinks_create():
 
 
 @drink_api.route("/drinks/<drink_id>", methods=["PATCH"])
+@requires_auth("patch:drinks")
 def drinks_update(drink_id):
     """
     PATCH /drinks/<id>
@@ -124,6 +129,7 @@ def drinks_update(drink_id):
 
 
 @drink_api.route("/drinks/<int:drink_id>/", methods=["DELETE"])
+@requires_auth("delete:drinks")
 def drinks_delete(drink_id):
     """
     DELETE /drinks/<id>

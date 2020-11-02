@@ -153,7 +153,7 @@ def requires_auth(permission=""):
                 check_permissions(permission, payload)
             except AuthError as exec:
                 abort(exec.status_code)
-            return f(payload, *args, **kwargs)
+            return f(*args, **kwargs)
 
         return wrapper
 

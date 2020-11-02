@@ -1,6 +1,7 @@
 import pytest
 from flask import url_for
 
+from .conftest import disable_auth
 from .factories import DrinkFactory
 
 
@@ -40,6 +41,7 @@ def test_get_all_is_short(client):
 # GET /drinks-detail tests ================================
 
 
+@pytest.mark.usefixtures("disable_auth")
 def test_get_all_detail(client):
     """GET /drinks-details: returns correct data"""
 
@@ -54,6 +56,7 @@ def test_get_all_detail(client):
     assert len(res.json.get("drinks", [])) == 5
 
 
+@pytest.mark.usefixtures("disable_auth")
 def test_get_all_detail_is_detail(client):
     """GET /drinks-details: returns recipe in long format"""
 
@@ -75,6 +78,7 @@ def test_get_all_detail_is_detail(client):
 # GET /drinks/<id> tests ================================
 
 
+@pytest.mark.usefixtures("disable_auth")
 def test_get_one_detail(client):
     """GET /drinks/<id>: returns correct data"""
 
@@ -90,6 +94,7 @@ def test_get_one_detail(client):
     assert res.json.get("drink", None) is not None
 
 
+@pytest.mark.usefixtures("disable_auth")
 def test_get_one_detail_correct_404(client):
     """GET /drinks/<id>: returns 404 on not found"""
 
@@ -104,6 +109,7 @@ def test_get_one_detail_correct_404(client):
 # POST /drinks tests ======================================
 
 
+@pytest.mark.usefixtures("disable_auth")
 def test_post_new_drink(client):
     """POST /drinks: successful"""
 
@@ -125,6 +131,7 @@ def test_post_new_drink(client):
     assert drink_json["recipe"]["parts"] == payload["recipe"]["parts"]
 
 
+@pytest.mark.usefixtures("disable_auth")
 def test_post_new_drink_missing_recipe(client):
     """POST /drinks: returns 422 on missing recipe"""
 
@@ -140,6 +147,7 @@ def test_post_new_drink_missing_recipe(client):
     assert res.json.get("error", None) == 422
 
 
+@pytest.mark.usefixtures("disable_auth")
 def test_post_new_drink_missing_title(client):
     """POST /drinks: returns 422 on missing title"""
 
@@ -156,6 +164,7 @@ def test_post_new_drink_missing_title(client):
 # PATCH /drinks tests =====================================
 
 
+@pytest.mark.usefixtures("disable_auth")
 def test_patch_drink_success(client):
     # insert some drinks in the database
     drink = DrinkFactory.create()
@@ -179,6 +188,7 @@ def test_patch_drink_success(client):
     assert drink_json["recipe"]["parts"] == payload["recipe"]["parts"]
 
 
+@pytest.mark.usefixtures("disable_auth")
 def test_patch_drink_notfound(client):
     # make request at PATCH /drinks/1
     res = client.patch(url_for("drinks.drinks_update", drink_id=1), json=dict())
@@ -188,6 +198,7 @@ def test_patch_drink_notfound(client):
     assert res.json.get("error", None) == 404
 
 
+@pytest.mark.usefixtures("disable_auth")
 def test_patch_drink_partial_title(client):
     # insert some drinks in the database
     drink = DrinkFactory.create()
@@ -208,6 +219,7 @@ def test_patch_drink_partial_title(client):
     assert drink_json["title"] == payload["title"]
 
 
+@pytest.mark.usefixtures("disable_auth")
 def test_patch_drink_partial_recipe(client):
     # insert some drinks in the database
     drink = DrinkFactory.create()
@@ -228,6 +240,7 @@ def test_patch_drink_partial_recipe(client):
     assert drink_json["recipe"]["parts"] == payload["recipe"]["parts"]
 
 
+@pytest.mark.usefixtures("disable_auth")
 def test_patch_drink_int_name(client):
     # insert some drinks in the database
     drink = DrinkFactory.create()
@@ -243,6 +256,7 @@ def test_patch_drink_int_name(client):
     assert res.json.get("error", None) == 422
 
 
+@pytest.mark.usefixtures("disable_auth")
 def test_patch_drink_invalid_recipe(client):
     # insert some drinks in the database
     drink = DrinkFactory.create()
@@ -261,6 +275,7 @@ def test_patch_drink_invalid_recipe(client):
 # DELETE /drinks tests =====================================
 
 
+@pytest.mark.usefixtures("disable_auth")
 def test_delete_drink_success(client):
     """DELETE /drinks/<id>: returns correct data"""
 
@@ -277,6 +292,7 @@ def test_delete_drink_success(client):
     assert res.json.get("delete", None) == drink_id
 
 
+@pytest.mark.usefixtures("disable_auth")
 def test_delete_drink_notfound(client):
     """DELETE /drinks/<id>: returns 404 on not found"""
 

@@ -38,3 +38,13 @@ def jwt_token():
 
     token = response.json().get("access_token", None)
     return token
+
+
+@pytest.fixture
+def disable_auth(monkeypatch):
+    def empty_func(_1=None, _2=None):
+        pass
+
+    monkeypatch.setattr("src.auth.auth.get_token_auth_header", empty_func)
+    monkeypatch.setattr("src.auth.auth.verify_decode_jwt", empty_func)
+    monkeypatch.setattr("src.auth.auth.check_permissions", empty_func)
