@@ -5,7 +5,6 @@ from src.auth import auth
 
 from .factories import DrinkFactory
 
-
 # get_token_auth_header tests =============================
 def test_get_token_auth_header_without_header(client):
     # make a request

@@ -1,7 +1,6 @@
 import pytest
 from flask import url_for
 
-from .conftest import disable_auth
 from .factories import DrinkFactory
 
 
@@ -39,8 +38,6 @@ def test_get_all_is_short(client):
 
 
 # GET /drinks-detail tests ================================
-
-
 @pytest.mark.usefixtures("disable_auth")
 def test_get_all_detail(client):
     """GET /drinks-details: returns correct data"""
@@ -76,8 +73,6 @@ def test_get_all_detail_is_detail(client):
 
 
 # GET /drinks/<id> tests ================================
-
-
 @pytest.mark.usefixtures("disable_auth")
 def test_get_one_detail(client):
     """GET /drinks/<id>: returns correct data"""
@@ -107,8 +102,6 @@ def test_get_one_detail_correct_404(client):
 
 
 # POST /drinks tests ======================================
-
-
 @pytest.mark.usefixtures("disable_auth")
 def test_post_new_drink(client):
     """POST /drinks: successful"""
@@ -162,8 +155,6 @@ def test_post_new_drink_missing_title(client):
 
 
 # PATCH /drinks tests =====================================
-
-
 @pytest.mark.usefixtures("disable_auth")
 def test_patch_drink_success(client):
     # insert some drinks in the database
@@ -273,8 +264,6 @@ def test_patch_drink_invalid_recipe(client):
 
 
 # DELETE /drinks tests =====================================
-
-
 @pytest.mark.usefixtures("disable_auth")
 def test_delete_drink_success(client):
     """DELETE /drinks/<id>: returns correct data"""
