@@ -144,7 +144,7 @@ def test_post_new_drink_missing_recipe(client):
 def test_post_new_drink_missing_title(client):
     """POST /drinks: returns 422 on missing title"""
 
-    payload = dict(recipe=dict(name="Test Recipe", color="#ffffff", parts="1"))
+    payload = dict(recipe=[dict(name="Test Recipe", color="#ffffff", parts="1")])
 
     # make request at POST /drinks
     res = client.post(url_for("drinks.drinks_create"), json=payload)
@@ -162,7 +162,8 @@ def test_patch_drink_success(client):
     drink.insert()
 
     payload = dict(
-        title="Test Drink", recipe=dict(name="Test Recipe", color="#ffffff", parts="1")
+        title="Test Drink",
+        recipe=[dict(name="Test Recipe", color="#ffffff", parts="1")],
     )
 
     # make request at PATCH /drinks/1
@@ -174,9 +175,9 @@ def test_patch_drink_success(client):
 
     drink_json = res.json["drinks"][0]
     assert drink_json["title"] == payload["title"]
-    assert drink_json["recipe"]["name"] == payload["recipe"]["name"]
-    assert drink_json["recipe"]["color"] == payload["recipe"]["color"]
-    assert drink_json["recipe"]["parts"] == payload["recipe"]["parts"]
+    assert drink_json["recipe"][0]["name"] == payload["recipe"][0]["name"]
+    assert drink_json["recipe"][0]["color"] == payload["recipe"][0]["color"]
+    assert drink_json["recipe"][0]["parts"] == payload["recipe"][0]["parts"]
 
 
 @pytest.mark.usefixtures("disable_auth")
@@ -253,7 +254,7 @@ def test_patch_drink_invalid_recipe(client):
     drink = DrinkFactory.create()
     drink.insert()
 
-    payload = dict(recipe=dict(name="Test Recipe", parts="1"))
+    payload = [dict(recipe=dict(name="Test Recipe", parts="1"))]
 
     # make request at PATCH /drinks/1
     res = client.patch(url_for("drinks.drinks_update", drink_id=drink.id), json=payload)

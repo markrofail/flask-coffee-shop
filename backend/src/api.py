@@ -7,6 +7,7 @@ from flask_cors import CORS
 from sqlalchemy import exc
 
 from src.auth.auth import AuthError, requires_auth
+from src.auth.constants import Permissions
 from src.models import db_drop_and_create_all, setup_db
 from src.serializers import (drink_schema, drinks_brief_schema, drinks_schema,
                              ma)
@@ -48,7 +49,7 @@ def drinks_list():
 
 
 @drink_api.route("/drinks-detail")
-@requires_auth("get:drinks-detail")
+@requires_auth(Permissions.GET_DRINK_DETAILS)
 def drinks_list_detail():
     """
     GET /drinks-detail
@@ -62,7 +63,7 @@ def drinks_list_detail():
 
 
 @drink_api.route("/drinks/<int:drink_id>", methods=["GET"])
-@requires_auth("get:drinks-detail")
+@requires_auth(Permissions.GET_DRINK_DETAILS)
 def drinks_detail(drink_id):
     """
     GET /drinks/<id>
@@ -78,7 +79,7 @@ def drinks_detail(drink_id):
 
 
 @drink_api.route("/drinks", methods=["POST"])
-@requires_auth("post:drinks")
+@requires_auth(Permissions.POST_DRINKS)
 def drinks_create():
     """
     POST /drinks
@@ -101,7 +102,7 @@ def drinks_create():
 
 
 @drink_api.route("/drinks/<drink_id>", methods=["PATCH"])
-@requires_auth("patch:drinks")
+@requires_auth(Permissions.PATCH_DRINKS)
 def drinks_update(drink_id):
     """
     PATCH /drinks/<id>
@@ -128,8 +129,8 @@ def drinks_update(drink_id):
     return jsonify(drinks=drinks_schema.dump([updated_queryset]), success=True)
 
 
-@drink_api.route("/drinks/<int:drink_id>/", methods=["DELETE"])
-@requires_auth("delete:drinks")
+@drink_api.route("/drinks/<int:drink_id>", methods=["DELETE"])
+@requires_auth(Permissions.DELETE_DRINKS)
 def drinks_delete(drink_id):
     """
     DELETE /drinks/<id>

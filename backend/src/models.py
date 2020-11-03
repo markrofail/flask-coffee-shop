@@ -4,6 +4,7 @@ from pathlib import Path
 
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Column, Integer, String
+from sqlalchemy.types import BigInteger
 
 project_dir = Path(__name__).parent / "database"
 database_filename = "database.db"
@@ -41,7 +42,7 @@ class Drink(db.Model):
     """
 
     # Autoincrementing, unique primary key
-    id = Column(Integer().with_variant(Integer, "sqlite"), primary_key=True)
+    id = Column(BigInteger().with_variant(Integer, "sqlite"), primary_key=True)
     # String Title
     title = Column(String(80), unique=True)
 

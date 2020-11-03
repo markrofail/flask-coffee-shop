@@ -50,6 +50,7 @@ def disable_auth(monkeypatch):
     for method in auth_methods:
         monkeypatch.setattr(f"src.auth.auth.{method}", lambda *args: None)
 
+
 # mocking role in connection
 def _make_request_as(monkeypatch, permissions):
     mock = dict(permissions=permissions)

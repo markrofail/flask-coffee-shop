@@ -34,9 +34,9 @@ def get_token_auth_header():
         return the token part of the header
     """
 
-    if "Authentication" not in request.headers:
+    if "Authorization" not in request.headers:
         raise AuthError("header not found", 401)
-    token = request.headers.get("Authentication")
+    token = request.headers.get("Authorization")
 
     prefix = "Bearer "
     if not token.startswith(prefix):

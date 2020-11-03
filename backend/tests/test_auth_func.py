@@ -5,6 +5,7 @@ from src.auth import auth
 
 from .factories import DrinkFactory
 
+
 # get_token_auth_header tests =============================
 def test_get_token_auth_header_without_header(client):
     # make a request
@@ -17,7 +18,7 @@ def test_get_token_auth_header_without_header(client):
 
 def test_get_token_auth_header_without_bearer(client):
     # make a request
-    headers = dict(Authentication="")
+    headers = dict(Authorization="")
     client.get("/", headers=headers)
 
     # assert raises error
@@ -27,7 +28,7 @@ def test_get_token_auth_header_without_bearer(client):
 
 def test_get_token_auth_header_wrong_prefix(client):
     # make a request
-    headers = dict(Authentication="Token asdAEad")
+    headers = dict(Authorization="Token asdAEad")
     client.get("/", headers=headers)
 
     # assert raises error
@@ -37,7 +38,7 @@ def test_get_token_auth_header_wrong_prefix(client):
 
 def test_get_token_auth_header_success(client):
     # make a request
-    headers = dict(Authentication="Bearer asdAEad")
+    headers = dict(Authorization="Bearer asdAEad")
     client.get("/", headers=headers)
 
     # assert correct output
@@ -46,19 +47,14 @@ def test_get_token_auth_header_success(client):
 
 
 # verify_decode_jwt test ==================================
-
-
 def test_verify_decode_jwt(jwt_token):
     if not jwt_token:
         pytest.skip("unsupported configuration")
 
     response = auth.verify_decode_jwt(jwt_token)
-    print(response)
 
 
 # check_permissions test ==================================
-
-
 def test_check_permissions_invalid_payload():
     # empty payload
     payload = dict()
