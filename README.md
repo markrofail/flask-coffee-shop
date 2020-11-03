@@ -11,6 +11,19 @@ You have been called on to demonstrate your newly learned skills to create a ful
 3) Allow the shop baristas to see the recipe information.
 4) Allow the shop managers to create new drinks and edit existing drinks.
 
+## Demo Accounts
+
+- Manager Account
+  - `email`:manager@example.com
+  - `pass`: uglyD!me63
+
+- Barista Account
+  - `email`: barista@example.com
+  - `pass`: lou)Memory86
+
+- Customer Account
+  - no need for one
+
 ## Tasks
 
 We recommend tackling the sections in order. Start by reading the READMEs in:
